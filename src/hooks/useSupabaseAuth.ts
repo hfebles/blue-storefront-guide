@@ -23,16 +23,35 @@ export const useSupabaseAuth = () => {
 
           if (error) {
             console.error('Error fetching user data:', error);
-            return;
+            setUser(null);
+          } else {
+            setUser(userData as User);
           }
-
-          setUser(userData);
         } else {
           setUser(null);
         }
         setLoading(false);
       }
     );
+
+    // Comprobar la sesión actual al cargar
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        const { data: userData, error } = await supabase
+          .from('directory_admins')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user data:', error);
+          setUser(null);
+        } else {
+          setUser(userData as User);
+        }
+      }
+      setLoading(false);
+    });
 
     return () => {
       subscription.unsubscribe();

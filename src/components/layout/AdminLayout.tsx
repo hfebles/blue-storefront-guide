@@ -1,15 +1,22 @@
 
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, Navigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Store, MessageSquare, Settings, LogOut, Home, PlusCircle, Users, ShoppingBag } from "lucide-react";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 const AdminLayout = () => {
-  const navigate = useNavigate();
+  const { user, loading, logout } = useSupabaseAuth();
+  const location = useLocation();
   
-  const handleLogout = () => {
-    // Aquí implementaremos la desconexión con Supabase más adelante
-    navigate("/admin");
-  };
+  // Redirigir a la página de inicio de sesión si el usuario no está autenticado
+  if (!loading && !user) {
+    return <Navigate to="/admin" state={{ from: location }} replace />;
+  }
+  
+  // Mostrar un indicador de carga mientras se verifica la autenticación
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Cargando...</div>;
+  }
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -79,7 +86,7 @@ const AdminLayout = () => {
               </Link>
               
               <button 
-                onClick={handleLogout}
+                onClick={() => logout()}
                 className="w-full flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-directorio-50 hover:text-directorio-600"
               >
                 <LogOut className="h-4 w-4 mr-3" />
@@ -94,6 +101,7 @@ const AdminLayout = () => {
           <div className="border-b border-directorio-100 bg-white p-4 flex justify-between items-center">
             <h2 className="text-lg font-medium text-directorio-700">Administración</h2>
             <div className="flex items-center space-x-4">
+              <span className="text-sm text-directorio-600">{user.email}</span>
               <Link to="/">
                 <Button variant="outline" size="sm" className="border-directorio-200">
                   Ver sitio web

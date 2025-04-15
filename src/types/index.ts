@@ -30,6 +30,6 @@ export interface ContactMessage {
 export interface User {
   id: string;
   email: string;
-  role: 'admin';
+  role: string;
   created_at: string;
 }
