@@ -80,6 +80,54 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          read: boolean
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          read?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          read?: boolean
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
@@ -104,6 +152,27 @@ export type Database = {
           message?: string
           name?: string
           subject?: string
+        }
+        Relationships: []
+      }
+      directory_admins: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          role?: string
         }
         Relationships: []
       }
@@ -137,6 +206,45 @@ export type Database = {
           name?: string
           price?: number
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stores: {
+        Row: {
+          address: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          latitude: number | null
+          logo: string
+          longitude: number | null
+          name: string
+          phone: string
+        }
+        Insert: {
+          address: string
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          latitude?: number | null
+          logo: string
+          longitude?: number | null
+          name: string
+          phone: string
+        }
+        Update: {
+          address?: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          latitude?: number | null
+          logo?: string
+          longitude?: number | null
+          name?: string
+          phone?: string
         }
         Relationships: []
       }

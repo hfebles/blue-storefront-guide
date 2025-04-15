@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { User } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
@@ -16,7 +16,7 @@ export const useSupabaseAuth = () => {
       async (event, session) => {
         if (session) {
           const { data: userData, error } = await supabase
-            .from('users')
+            .from('directory_admins')
             .select('*')
             .eq('id', session.user.id)
             .single();

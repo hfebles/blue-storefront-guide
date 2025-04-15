@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Store } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 
