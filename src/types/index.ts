@@ -26,3 +26,10 @@ export interface ContactMessage {
   created_at: string;
   read: boolean;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  role: 'admin';
+  created_at: string;
+}
