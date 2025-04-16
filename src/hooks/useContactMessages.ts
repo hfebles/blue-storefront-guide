@@ -48,9 +48,53 @@ export const useContactMessages = () => {
     },
   });
 
+  const markAsRead = useMutation({
+    mutationFn: async (messageId: string) => {
+      const { data, error } = await supabase
+        .from('contact_messages')
+        .update({ read: true })
+        .eq('id', messageId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+    },
+  });
+
+  const deleteMessage = useMutation({
+    mutationFn: async (messageId: string) => {
+      const { error } = await supabase
+        .from('contact_messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+      toast({
+        title: 'Mensaje eliminado',
+        description: 'El mensaje ha sido eliminado correctamente.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error al eliminar el mensaje',
+        description: error.message,
+      });
+    },
+  });
+
   return {
     messages: messages || [],
     isLoading,
     createMessage,
+    markAsRead,
+    deleteMessage,
   };
 };

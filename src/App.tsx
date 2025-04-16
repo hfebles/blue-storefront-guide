@@ -12,6 +12,12 @@ import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminStores from "./pages/admin/AdminStores";
+import AdminStoreForm from "./pages/admin/AdminStoreForm";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminMessages from "./pages/admin/AdminMessages";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,7 +41,13 @@ const App = () => (
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
-            {/* Aquí se agregarán más rutas de administración */}
+            <Route path="stores" element={<AdminStores />} />
+            <Route path="stores/new" element={<AdminStoreForm />} />
+            <Route path="stores/:id" element={<AdminStoreForm />} />
+            <Route path="categories" element={<AdminCategories />} />
+            <Route path="messages" element={<AdminMessages />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
           
           {/* Ruta 404 */}

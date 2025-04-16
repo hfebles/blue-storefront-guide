@@ -1,21 +1,29 @@
 
+export interface User {
+  id: string;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
 export interface Store {
   id: string;
   name: string;
   description: string;
-  phone: string;
   address: string;
+  phone: string;
   logo: string;
   category: string;
   latitude?: number;
   longitude?: number;
-  created_at?: string;
+  created_at: string;
 }
 
 export interface Category {
   id: string;
   name: string;
   slug: string;
+  created_at: string;
 }
 
 export interface ContactMessage {
@@ -23,13 +31,6 @@ export interface ContactMessage {
   name: string;
   email: string;
   message: string;
-  created_at: string;
   read: boolean;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  role: string;
   created_at: string;
 }
