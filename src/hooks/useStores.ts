@@ -48,6 +48,7 @@ export const useStores = (categoryId?: string | null) => {
       console.log('Fetched stores:', data);
       return data as Store[];
     },
+    refetchOnMount: true,
   });
 
   return {

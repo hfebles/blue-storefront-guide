@@ -18,7 +18,6 @@ import { useContactMessages } from "@/hooks/useContactMessages";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +32,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const AdminMessages = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { messages, isLoading } = useContactMessages();
+  const { messages, isLoading, markAsRead, deleteMessage } = useContactMessages();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
@@ -48,15 +47,7 @@ const AdminMessages = () => {
     // Mark as read if not already read
     if (!message.read) {
       try {
-        const { error } = await supabase
-          .from("contact_messages")
-          .update({ read: true })
-          .eq("id", message.id);
-
-        if (error) throw error;
-        
-        // Invalidate the messages query to refresh the data
-        queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
+        await markAsRead.mutateAsync(message.id);
       } catch (error) {
         console.error("Error marking message as read:", error);
       }
@@ -66,41 +57,28 @@ const AdminMessages = () => {
   const handleDeleteMessage = async (id: string) => {
     if (confirm("¿Estás seguro de que deseas eliminar este mensaje?")) {
       try {
-        const { error } = await supabase
-          .from("contact_messages")
-          .delete()
-          .eq("id", id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Mensaje eliminado",
-          description: "El mensaje ha sido eliminado correctamente.",
-        });
+        await deleteMessage.mutateAsync(id);
 
         // If the deleted message is currently being viewed, close the dialog
         if (selectedMessage && selectedMessage.id === id) {
           setSelectedMessage(null);
         }
-
-        // Invalidate the messages query to refresh the data
-        queryClient.invalidateQueries({ queryKey: ["contact-messages"] });
       } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Error al eliminar",
-          description: error.message,
+          description: error.message || "Hubo un error al eliminar el mensaje",
         });
       }
     }
   };
 
-  const filteredMessages = messages.filter(
+  const filteredMessages = messages ? messages.filter(
     (message) =>
       message.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       message.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       message.message.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   const formatDate = (dateString: string) => {
     try {
@@ -109,6 +87,9 @@ const AdminMessages = () => {
       return dateString;
     }
   };
+
+  console.log("Messages in AdminMessages component:", messages);
+  console.log("isLoading:", isLoading);
 
   return (
     <div className="space-y-6">
