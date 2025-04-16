@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -110,7 +109,12 @@ const AdminCategories = () => {
         });
       } else {
         // Create
-        const { error } = await supabase.from("categories").insert([values]);
+        const { error } = await supabase
+          .from("categories")
+          .insert({
+            name: values.name,
+            slug: values.slug,
+          });
 
         if (error) throw error;
 

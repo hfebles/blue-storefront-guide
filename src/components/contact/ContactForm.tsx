@@ -1,30 +1,35 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Send, Phone, Info } from "lucide-react";
+import { Mail, Send, Info } from "lucide-react";
+import { useContactMessages } from "@/hooks/useContactMessages";
 
 const ContactForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { createMessage } = useContactMessages();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    // Aquí implementaremos la conexión con Supabase más adelante
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
+    try {
+      await createMessage.mutateAsync({
+        name,
+        email,
+        message
+      });
+      
       setName("");
       setEmail("");
       setMessage("");
-    }, 1500);
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   return (
@@ -103,10 +108,10 @@ const ContactForm = () => {
         <CardFooter className="border-t border-directorio-100 bg-directorio-50/30">
           <Button 
             onClick={handleSubmit} 
-            disabled={isSubmitting}
+            disabled={createMessage.isPending}
             className="bg-directorio-500 hover:bg-directorio-600 ml-auto"
           >
-            {isSubmitting ? (
+            {createMessage.isPending ? (
               <>Enviando...</>
             ) : (
               <>

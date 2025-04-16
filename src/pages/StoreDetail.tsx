@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Store } from "@/types";
@@ -17,7 +16,8 @@ const SAMPLE_STORES: Store[] = [
     logo: "https://placehold.co/400x300?text=Restaurante+El+Rincón",
     category: "Restaurantes",
     latitude: 40.4167,
-    longitude: -3.7033
+    longitude: -3.7033,
+    created_at: new Date().toISOString()
   },
   {
     id: "2",
@@ -28,7 +28,8 @@ const SAMPLE_STORES: Store[] = [
     logo: "https://placehold.co/400x300?text=Moda+Elegante",
     category: "Moda",
     latitude: 40.4160,
-    longitude: -3.7040
+    longitude: -3.7040,
+    created_at: new Date().toISOString()
   },
   {
     id: "3",
@@ -39,7 +40,8 @@ const SAMPLE_STORES: Store[] = [
     logo: "https://placehold.co/400x300?text=TechStore",
     category: "Tecnología",
     latitude: 40.4155,
-    longitude: -3.7050
+    longitude: -3.7050,
+    created_at: new Date().toISOString()
   },
   {
     id: "4",
@@ -50,7 +52,8 @@ const SAMPLE_STORES: Store[] = [
     logo: "https://placehold.co/400x300?text=Farmacia+Salud+Total",
     category: "Salud",
     latitude: 40.4145,
-    longitude: -3.7060
+    longitude: -3.7060,
+    created_at: new Date().toISOString()
   },
   {
     id: "5",
@@ -61,7 +64,8 @@ const SAMPLE_STORES: Store[] = [
     logo: "https://placehold.co/400x300?text=Muebles+Confort",
     category: "Hogar",
     latitude: 40.4135,
-    longitude: -3.7070
+    longitude: -3.7070,
+    created_at: new Date().toISOString()
   },
   {
     id: "6",
@@ -72,7 +76,8 @@ const SAMPLE_STORES: Store[] = [
     logo: "https://placehold.co/400x300?text=Limpieza+Express",
     category: "Servicios",
     latitude: 40.4125,
-    longitude: -3.7080
+    longitude: -3.7080,
+    created_at: new Date().toISOString()
   },
 ];
 
