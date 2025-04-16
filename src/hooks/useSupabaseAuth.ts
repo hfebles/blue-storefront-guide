@@ -14,18 +14,25 @@ export const useSupabaseAuth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session);
         if (session) {
-          const { data: userData, error } = await supabase
-            .from('directory_admins')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+          try {
+            const { data: userData, error } = await supabase
+              .from('directory_admins')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
 
-          if (error) {
-            console.error('Error fetching user data:', error);
+            if (error) {
+              console.error('Error fetching user data:', error);
+              setUser(null);
+            } else {
+              console.log('Admin user data:', userData);
+              setUser(userData as User);
+            }
+          } catch (err) {
+            console.error('Error in auth state change:', err);
             setUser(null);
-          } else {
-            setUser(userData as User);
           }
         } else {
           setUser(null);
@@ -36,18 +43,25 @@ export const useSupabaseAuth = () => {
 
     // Comprobar la sesión actual al cargar
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session check:', session);
       if (session) {
-        const { data: userData, error } = await supabase
-          .from('directory_admins')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+        try {
+          const { data: userData, error } = await supabase
+            .from('directory_admins')
+            .select('*')
+            .eq('email', session.user.email)
+            .single();
 
-        if (error) {
-          console.error('Error fetching user data:', error);
+          if (error) {
+            console.error('Error fetching user data:', error);
+            setUser(null);
+          } else {
+            console.log('Admin user data:', userData);
+            setUser(userData as User);
+          }
+        } catch (err) {
+          console.error('Error checking initial session:', err);
           setUser(null);
-        } else {
-          setUser(userData as User);
         }
       }
       setLoading(false);
@@ -59,37 +73,57 @@ export const useSupabaseAuth = () => {
   }, []);
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting login with:', email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      navigate('/admin/dashboard');
+      // Check if the user exists in directory_admins
+      const { data: adminUser, error: adminError } = await supabase
+        .from('directory_admins')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (adminError || !adminUser) {
+        throw new Error('Acceso no autorizado');
+      }
+
+      console.log('Login successful:', data);
       toast({
         title: 'Inicio de sesión exitoso',
         description: 'Bienvenido al panel de administración',
       });
+
+      navigate('/admin/dashboard');
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         variant: 'destructive',
         title: 'Error al iniciar sesión',
         description: error.message,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
+      console.log('Logging out');
       await supabase.auth.signOut();
-      navigate('/admin');
       toast({
         title: 'Sesión cerrada',
         description: 'Has cerrado sesión correctamente',
       });
+      navigate('/admin');
     } catch (error: any) {
+      console.error('Logout error:', error);
       toast({
         variant: 'destructive',
         title: 'Error al cerrar sesión',
