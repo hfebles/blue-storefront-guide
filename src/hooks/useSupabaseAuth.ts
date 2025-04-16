@@ -17,10 +17,11 @@ export const useSupabaseAuth = () => {
         console.log('Auth state changed:', event, session);
         if (session) {
           try {
+            // Query by email instead of id
             const { data: userData, error } = await supabase
               .from('directory_admins')
               .select('*')
-              .eq('id', session.user.id)
+              .eq('email', session.user.email)
               .single();
 
             if (error) {
@@ -29,6 +30,12 @@ export const useSupabaseAuth = () => {
             } else {
               console.log('Admin user data:', userData);
               setUser(userData as User);
+              
+              // If auth state changed to SIGNED_IN and we have user data
+              // redirect to dashboard if we're on the login page
+              if (event === 'SIGNED_IN' && window.location.pathname === '/admin') {
+                navigate('/admin/dashboard');
+              }
             }
           } catch (err) {
             console.error('Error in auth state change:', err);
@@ -41,7 +48,7 @@ export const useSupabaseAuth = () => {
       }
     );
 
-    // Comprobar la sesión actual al cargar
+    // Check current session on load
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('Initial session check:', session);
       if (session) {
@@ -58,6 +65,11 @@ export const useSupabaseAuth = () => {
           } else {
             console.log('Admin user data:', userData);
             setUser(userData as User);
+            
+            // Redirect to dashboard if we're on the login page
+            if (window.location.pathname === '/admin') {
+              navigate('/admin/dashboard');
+            }
           }
         } catch (err) {
           console.error('Error checking initial session:', err);
@@ -70,7 +82,7 @@ export const useSupabaseAuth = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -108,7 +120,6 @@ export const useSupabaseAuth = () => {
         title: 'Error al iniciar sesión',
         description: error.message,
       });
-    } finally {
       setLoading(false);
     }
   };

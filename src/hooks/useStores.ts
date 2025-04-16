@@ -15,15 +15,21 @@ export const useStores = (categoryId?: string | null) => {
       let query = supabase.from('stores').select('*');
 
       if (categoryId) {
-        const { data: category } = await supabase
+        // First get the category name
+        const { data: categoryData, error: categoryError } = await supabase
           .from('categories')
           .select('name')
           .eq('id', categoryId)
           .single();
-
-        if (category) {
-          console.log('Filtering by category:', category.name);
-          query = query.eq('category', category.name);
+        
+        if (categoryError) {
+          console.error('Error fetching category:', categoryError);
+          throw categoryError;
+        }
+        
+        if (categoryData) {
+          console.log('Filtering by category:', categoryData.name);
+          query = query.eq('category', categoryData.name);
         }
       }
 
@@ -39,7 +45,7 @@ export const useStores = (categoryId?: string | null) => {
         throw error;
       }
       
-      console.log('Fetched stores:', data?.length || 0, 'records');
+      console.log('Fetched stores:', data);
       return data as Store[];
     },
   });
