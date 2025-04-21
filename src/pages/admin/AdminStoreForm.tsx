@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCategories } from "@/hooks/useCategories";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "El nombre es obligatorio" }),
@@ -46,7 +47,7 @@ const AdminStoreForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const { categories, isLoading: categoriesLoading } = useCategories();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
@@ -64,18 +65,6 @@ const AdminStoreForm = () => {
   });
 
   useEffect(() => {
-    // Fetch categories
-    const fetchCategories = async () => {
-      const { data, error } = await supabase.from("categories").select("*");
-      if (error) {
-        console.error("Error fetching categories:", error);
-        return;
-      }
-      setCategories(data);
-    };
-
-    fetchCategories();
-
     // If editing an existing store, fetch its data
     if (id) {
       const fetchStore = async () => {
@@ -100,6 +89,7 @@ const AdminStoreForm = () => {
         }
 
         if (data) {
+          console.log("Setting form data with:", data);
           form.reset({
             name: data.name,
             category: data.category,
@@ -120,6 +110,7 @@ const AdminStoreForm = () => {
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     try {
+      console.log("Submitting form with values:", values);
       const storeData = {
         name: values.name,
         category: values.category,
@@ -148,7 +139,10 @@ const AdminStoreForm = () => {
         // Create new store
         const { error } = await supabase.from("stores").insert([storeData]);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error creating store:", error);
+          throw error;
+        }
 
         toast({
           title: "Comercio creado",
@@ -161,15 +155,19 @@ const AdminStoreForm = () => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });
       navigate("/admin/stores");
     } catch (error: any) {
+      console.error("Error submitting form:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: error.message || "Ocurrió un error al guardar el comercio",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  console.log("Available categories:", categories);
+  console.log("Current form values:", form.getValues());
 
   return (
     <div>
@@ -217,11 +215,21 @@ const AdminStoreForm = () => {
                             <SelectValue placeholder="Selecciona una categoría" />
                           </SelectTrigger>
                           <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category.id} value={category.name}>
-                                {category.name}
+                            {categoriesLoading ? (
+                              <SelectItem value="loading" disabled>
+                                Cargando categorías...
                               </SelectItem>
-                            ))}
+                            ) : categories && categories.length > 0 ? (
+                              categories.map((category) => (
+                                <SelectItem key={category.id} value={category.name}>
+                                  {category.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="none" disabled>
+                                No hay categorías disponibles
+                              </SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -329,7 +337,7 @@ const AdminStoreForm = () => {
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading || categoriesLoading}>
                   {isLoading ? "Guardando..." : id ? "Actualizar" : "Crear"}
                 </Button>
               </div>
