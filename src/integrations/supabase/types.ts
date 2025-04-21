@@ -215,11 +215,15 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          featured_order: number | null
           id: string
+          is_featured: boolean | null
+          is_new: boolean | null
           latitude: number | null
           logo: string
           longitude: number | null
           name: string
+          new_until: string | null
           phone: string
         }
         Insert: {
@@ -227,11 +231,15 @@ export type Database = {
           category: string
           created_at?: string
           description: string
+          featured_order?: number | null
           id?: string
+          is_featured?: boolean | null
+          is_new?: boolean | null
           latitude?: number | null
           logo: string
           longitude?: number | null
           name: string
+          new_until?: string | null
           phone: string
         }
         Update: {
@@ -239,11 +247,15 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          featured_order?: number | null
           id?: string
+          is_featured?: boolean | null
+          is_new?: boolean | null
           latitude?: number | null
           logo?: string
           longitude?: number | null
           name?: string
+          new_until?: string | null
           phone?: string
         }
         Relationships: []

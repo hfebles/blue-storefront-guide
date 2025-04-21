@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -28,6 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCategories } from "@/hooks/useCategories";
+import { Switch } from "@/components/ui/switch";
+import { formatISO } from "date-fns";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "El nombre es obligatorio" }),
@@ -38,6 +39,10 @@ const formSchema = z.object({
   logo: z.string().min(1, { message: "La URL del logo es obligatoria" }),
   latitude: z.string().optional(),
   longitude: z.string().optional(),
+  is_featured: z.boolean().default(false),
+  featured_order: z.string().optional(),
+  is_new: z.boolean().default(true),
+  new_until: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -61,11 +66,14 @@ const AdminStoreForm = () => {
       logo: "https://via.placeholder.com/150",
       latitude: "",
       longitude: "",
+      is_featured: false,
+      featured_order: "",
+      is_new: true,
+      new_until: "",
     },
   });
 
   useEffect(() => {
-    // If editing an existing store, fetch its data
     if (id) {
       const fetchStore = async () => {
         setIsLoading(true);
@@ -89,7 +97,6 @@ const AdminStoreForm = () => {
         }
 
         if (data) {
-          console.log("Setting form data with:", data);
           form.reset({
             name: data.name,
             category: data.category,
@@ -99,6 +106,10 @@ const AdminStoreForm = () => {
             logo: data.logo,
             latitude: data.latitude?.toString() || "",
             longitude: data.longitude?.toString() || "",
+            is_featured: !!data.is_featured,
+            featured_order: data.featured_order?.toString() ?? "",
+            is_new: !!data.is_new,
+            new_until: data.new_until ? formatISO(new Date(data.new_until), { representation: "date" }) : "",
           });
         }
       };
@@ -110,7 +121,6 @@ const AdminStoreForm = () => {
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     try {
-      console.log("Submitting form with values:", values);
       const storeData = {
         name: values.name,
         category: values.category,
@@ -120,10 +130,13 @@ const AdminStoreForm = () => {
         logo: values.logo,
         latitude: values.latitude ? parseFloat(values.latitude) : null,
         longitude: values.longitude ? parseFloat(values.longitude) : null,
+        is_featured: values.is_featured,
+        featured_order: values.featured_order ? parseInt(values.featured_order) : 0,
+        is_new: values.is_new,
+        new_until: values.new_until ? new Date(values.new_until).toISOString() : null,
       };
 
       if (id) {
-        // Update existing store
         const { error } = await supabase
           .from("stores")
           .update(storeData)
@@ -136,7 +149,6 @@ const AdminStoreForm = () => {
           description: "El comercio se ha actualizado correctamente",
         });
       } else {
-        // Create new store
         const { error } = await supabase.from("stores").insert([storeData]);
 
         if (error) {
@@ -151,7 +163,6 @@ const AdminStoreForm = () => {
         form.reset();
       }
 
-      // Invalidate the stores query to refresh the data
       queryClient.invalidateQueries({ queryKey: ["stores"] });
       navigate("/admin/stores");
     } catch (error: any) {
@@ -305,6 +316,83 @@ const AdminStoreForm = () => {
                       <FormControl>
                         <Input placeholder="Longitud" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="is_featured"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>¿Tienda destacada?</FormLabel>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <span className="text-xs text-gray-500">Aparecerá en la sección premium/patrocinada</span>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="featured_order"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Orden destacado (opcional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ej. 1 (menor aparecerá primero)"
+                          type="number"
+                          {...field}
+                        />
+                      </FormControl>
+                      <span className="text-xs text-gray-500">Sólo para destacadas.</span>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="is_new"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>¿Marcar como nueva?</FormLabel>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <span className="text-xs text-gray-500">Se resaltará como tienda nueva.</span>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="new_until"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mostrar como nueva hasta</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                        />
+                      </FormControl>
+                      <span className="text-xs text-gray-500">Déjalo vacío para usar el valor por defecto.</span>
                       <FormMessage />
                     </FormItem>
                   )}
