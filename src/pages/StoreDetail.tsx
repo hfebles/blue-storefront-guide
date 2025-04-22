@@ -4,91 +4,29 @@ import { Store } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin, ArrowLeft } from "lucide-react";
-
-// Datos de muestra hasta que integremos Supabase
-const SAMPLE_STORES: Store[] = [
-  {
-    id: "1",
-    name: "Restaurante El Rincón",
-    description: "Comida tradicional casera con ingredientes locales y de temporada. Ofrecemos un menú diario variado con platos tradicionales y nuestras especialidades de fin de semana incluyen paellas y asados. Contamos con espacio para eventos y celebraciones familiares. Nuestro chef tiene más de 20 años de experiencia en la cocina mediterránea.",
-    phone: "123-456-7890",
-    address: "Calle Principal 123",
-    logo: "https://placehold.co/400x300?text=Restaurante+El+Rincón",
-    category: "Restaurantes",
-    latitude: 40.4167,
-    longitude: -3.7033,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: "2",
-    name: "Moda Elegante",
-    description: "Boutique de ropa con las últimas tendencias. Moda para hombre y mujer con prendas exclusivas importadas. Trabajamos con diseñadores nacionales e internacionales para traerte lo mejor de la moda. Ofrecemos servicio de sastrería y asesoramiento personalizado para encontrar el estilo que mejor se adapte a ti.",
-    phone: "123-456-7891",
-    address: "Av. de la Moda 456",
-    logo: "https://placehold.co/400x300?text=Moda+Elegante",
-    category: "Moda",
-    latitude: 40.4160,
-    longitude: -3.7040,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: "3",
-    name: "TechStore",
-    description: "Tienda de dispositivos electrónicos, reparaciones y accesorios. Servicio técnico especializado y garantía extendida. Somos distribuidores oficiales de las principales marcas de tecnología. Ofrecemos instalación y configuración de equipos a domicilio, así como cursos básicos para aprender a utilizar tus dispositivos.",
-    phone: "123-456-7892",
-    address: "Plaza Tecnología 789",
-    logo: "https://placehold.co/400x300?text=TechStore",
-    category: "Tecnología",
-    latitude: 40.4155,
-    longitude: -3.7050,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: "4",
-    name: "Farmacia Salud Total",
-    description: "Medicamentos, productos de cuidado personal y asesoramiento farmacéutico. Servicio 24 horas y entregas a domicilio. Realizamos seguimiento farmacoterapéutico y disponemos de una amplia gama de productos de parafarmacia y cosmética. Nuestro personal está formado para brindar el mejor consejo sanitario.",
-    phone: "123-456-7893",
-    address: "Av. Bienestar 101",
-    logo: "https://placehold.co/400x300?text=Farmacia+Salud+Total",
-    category: "Salud",
-    latitude: 40.4145,
-    longitude: -3.7060,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: "5",
-    name: "Muebles Confort",
-    description: "Mobiliario para el hogar, diseño moderno y tradicional. Fabricación personalizada y entrega en toda la ciudad. Trabajamos con los mejores materiales y ofrecemos asesoramiento de decoración gratuito. Disponemos de taller propio para personalizar cualquier mueble según tus necesidades y espacio.",
-    phone: "123-456-7894",
-    address: "Calle Industrial 202",
-    logo: "https://placehold.co/400x300?text=Muebles+Confort",
-    category: "Hogar",
-    latitude: 40.4135,
-    longitude: -3.7070,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: "6",
-    name: "Limpieza Express",
-    description: "Servicio de limpieza para hogares y oficinas. Planes semanales, quincenales o por evento con personal capacitado. Utilizamos productos ecológicos y disponemos de equipos profesionales para todo tipo de superficies. Ofrecemos presupuestos sin compromiso y flexibilidad horaria para adaptarnos a tus necesidades.",
-    phone: "123-456-7895",
-    address: "Paseo del Servicio 303",
-    logo: "https://placehold.co/400x300?text=Limpieza+Express",
-    category: "Servicios",
-    latitude: 40.4125,
-    longitude: -3.7080,
-    created_at: new Date().toISOString()
-  },
-];
+import { StoreGallery } from "@/components/stores/StoreGallery";
+import { supabase } from "@/integrations/supabase/client";
 
 const StoreDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [store, setStore] = useState<Store | null>(null);
   
   useEffect(() => {
-    // Aquí implementaremos la conexión con Supabase más adelante
-    const foundStore = SAMPLE_STORES.find(s => s.id === id);
-    setStore(foundStore || null);
+    const fetchStore = async () => {
+      if (!id) return;
+      
+      const { data, error } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+      if (!error && data) {
+        setStore(data);
+      }
+    };
+    
+    fetchStore();
   }, [id]);
   
   if (!store) {
@@ -143,6 +81,12 @@ const StoreDetail = () => {
               </div>
             </CardContent>
           </Card>
+          
+          {store.is_featured && (
+            <div className="mt-8">
+              <StoreGallery storeId={store.id} />
+            </div>
+          )}
         </div>
         
         <div>

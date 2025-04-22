@@ -209,6 +209,38 @@ export type Database = {
         }
         Relationships: []
       }
+      store_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_order: number | null
+          image_url: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_order?: number | null
+          image_url: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_order?: number | null
+          image_url?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_images_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           address: string

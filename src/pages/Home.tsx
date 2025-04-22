@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import StoreCard from "@/components/stores/StoreCard";
 import CategoryFilter from "@/components/stores/CategoryFilter";
+import { FeaturedStoresCarousel } from "@/components/stores/FeaturedStoresCarousel";
 import { Category } from "@/types";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,6 @@ const Home = () => {
   const { stores, isLoading: storesLoading, searchTerm, setSearchTerm } = useStores(selectedCategory);
   const { toast } = useToast();
   
-  // Obtener categorías desde Supabase
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -50,6 +49,8 @@ const Home = () => {
           Explora los mejores negocios y servicios de tu zona y apoya el comercio local
         </p>
       </div>
+      
+      <FeaturedStoresCarousel />
       
       <div className="max-w-xl mx-auto mb-8 relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
