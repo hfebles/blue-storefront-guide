@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin, ArrowLeft } from "lucide-react";
 import { StoreGallery } from "@/components/stores/StoreGallery";
+import { PremiumStoresBanner } from "@/components/stores/PremiumStoresBanner";
 import { supabase } from "@/integrations/supabase/client";
 
 const StoreDetail = () => {
@@ -88,6 +89,9 @@ const StoreDetail = () => {
               <StoreGallery storeId={store.id} />
             </div>
           )}
+          
+          {/* Banner de tiendas premium */}
+          <PremiumStoresBanner currentStoreId={store.id} />
         </div>
         
         <div>
