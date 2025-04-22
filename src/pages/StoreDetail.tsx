@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Store } from "@/types";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Phone, MapPin, ArrowLeft } from "lucide-react";
 import { StoreGallery } from "@/components/stores/StoreGallery";
 import { PremiumStoresBanner } from "@/components/stores/PremiumStoresBanner";
+import { RelatedStoresBanner } from "@/components/stores/RelatedStoresBanner";
 import { supabase } from "@/integrations/supabase/client";
 
 const StoreDetail = () => {
@@ -90,8 +90,9 @@ const StoreDetail = () => {
             </div>
           )}
           
-          {/* Banner de tiendas premium */}
           <PremiumStoresBanner currentStoreId={store.id} />
+
+          <RelatedStoresBanner currentStoreId={store.id} category={store.category} />
         </div>
         
         <div>
