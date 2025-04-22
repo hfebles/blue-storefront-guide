@@ -29,6 +29,7 @@ import {
 import { useCategories } from "@/hooks/useCategories";
 import { Switch } from "@/components/ui/switch";
 import { formatISO } from "date-fns";
+import { StoreImageUploader } from "@/components/admin/StoreImageUploader";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "El nombre es obligatorio" }),
@@ -149,7 +150,10 @@ const AdminStoreForm = () => {
           description: "El comercio se ha actualizado correctamente",
         });
       } else {
-        const { error } = await supabase.from("stores").insert([storeData]);
+        const { data, error } = await supabase
+          .from("stores")
+          .insert([storeData])
+          .select();
 
         if (error) {
           console.error("Error creating store:", error);
@@ -160,11 +164,18 @@ const AdminStoreForm = () => {
           title: "Comercio creado",
           description: "El nuevo comercio se ha creado correctamente",
         });
-        form.reset();
+        
+        if (data && data[0]) {
+          navigate(`/admin/stores/edit/${data[0].id}`);
+        } else {
+          form.reset();
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ["stores"] });
-      navigate("/admin/stores");
+      if (!id) {
+        navigate("/admin/stores");
+      }
     } catch (error: any) {
       console.error("Error submitting form:", error);
       toast({
@@ -433,6 +444,8 @@ const AdminStoreForm = () => {
           </Form>
         </CardContent>
       </Card>
+      
+      {id && <StoreImageUploader storeId={id} />}
     </div>
   );
 };
