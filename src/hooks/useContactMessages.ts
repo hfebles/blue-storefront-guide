@@ -19,6 +19,11 @@ export const useContactMessages = () => {
 
       if (error) {
         console.error("Error fetching contact messages:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error al cargar los mensajes',
+          description: error.message || "Ocurrió un error al cargar los mensajes",
+        });
         throw error;
       }
       
@@ -63,6 +68,7 @@ export const useContactMessages = () => {
 
   const markAsRead = useMutation({
     mutationFn: async (messageId: string) => {
+      console.log("Marking message as read:", messageId);
       const { data, error } = await supabase
         .from('contact_messages')
         .update({ read: true })
@@ -70,22 +76,44 @@ export const useContactMessages = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error marking message as read:", error);
+        throw error;
+      }
+      
+      console.log("Marked message as read:", data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
+      toast({
+        title: 'Mensaje marcado como leído',
+        description: 'El mensaje ha sido marcado como leído correctamente.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error al marcar como leído',
+        description: error.message || "Ocurrió un error al marcar el mensaje como leído",
+      });
     },
   });
 
   const deleteMessage = useMutation({
     mutationFn: async (messageId: string) => {
+      console.log("Deleting message:", messageId);
       const { error } = await supabase
         .from('contact_messages')
         .delete()
         .eq('id', messageId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting message:", error);
+        throw error;
+      }
+      
+      console.log("Message deleted successfully");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-messages'] });
@@ -98,7 +126,7 @@ export const useContactMessages = () => {
       toast({
         variant: 'destructive',
         title: 'Error al eliminar el mensaje',
-        description: error.message,
+        description: error.message || "Ocurrió un error al eliminar el mensaje",
       });
     },
   });

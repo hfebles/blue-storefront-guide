@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { MessageSquare, Search, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,14 +27,13 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { useQueryClient } from "@tanstack/react-query";
 
 const AdminMessages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { messages, isLoading, markAsRead, deleteMessage } = useContactMessages();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -43,6 +41,7 @@ const AdminMessages = () => {
 
   const handleViewMessage = async (message: any) => {
     setSelectedMessage(message);
+    setDialogOpen(true);
     
     // Mark as read if not already read
     if (!message.read) {
@@ -62,6 +61,7 @@ const AdminMessages = () => {
         // If the deleted message is currently being viewed, close the dialog
         if (selectedMessage && selectedMessage.id === id) {
           setSelectedMessage(null);
+          setDialogOpen(false);
         }
       } catch (error: any) {
         toast({
@@ -75,9 +75,9 @@ const AdminMessages = () => {
 
   const filteredMessages = messages ? messages.filter(
     (message) =>
-      message.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.message.toLowerCase().includes(searchTerm.toLowerCase())
+      message.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.message?.toLowerCase().includes(searchTerm.toLowerCase())
   ) : [];
 
   const formatDate = (dateString: string) => {
@@ -142,64 +142,15 @@ const AdminMessages = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => handleViewMessage(message)}
-                              >
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">Ver</span>
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-lg">
-                              <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                  <MessageSquare className="h-5 w-5" />
-                                  Mensaje de {selectedMessage?.name}
-                                </DialogTitle>
-                                <DialogDescription>
-                                  Recibido el {selectedMessage && formatDate(selectedMessage.created_at)}
-                                </DialogDescription>
-                              </DialogHeader>
-                              
-                              <div className="space-y-4 mt-4">
-                                <div>
-                                  <div className="text-sm font-medium text-gray-500">Email:</div>
-                                  <div>{selectedMessage?.email}</div>
-                                </div>
-                                
-                                <div>
-                                  <div className="text-sm font-medium text-gray-500">Mensaje:</div>
-                                  <div className="mt-1 whitespace-pre-wrap bg-gray-50 p-3 rounded-md border">
-                                    {selectedMessage?.message}
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <DialogFooter className="mt-6">
-                                <Button
-                                  variant="destructive"
-                                  onClick={() => selectedMessage && handleDeleteMessage(selectedMessage.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Eliminar
-                                </Button>
-                                <DialogClose asChild>
-                                  <Button variant="outline">
-                                    Cerrar
-                                  </Button>
-                                </DialogClose>
-                                <Button asChild>
-                                  <a href={`mailto:${selectedMessage?.email}`}>
-                                    Responder
-                                  </a>
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleViewMessage(message)}
+                          >
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">Ver</span>
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -223,6 +174,54 @@ const AdminMessages = () => {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              {selectedMessage && `Mensaje de ${selectedMessage.name}`}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedMessage && `Recibido el ${formatDate(selectedMessage.created_at)}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            <div>
+              <div className="text-sm font-medium text-gray-500">Email:</div>
+              <div>{selectedMessage?.email}</div>
+            </div>
+            
+            <div>
+              <div className="text-sm font-medium text-gray-500">Mensaje:</div>
+              <div className="mt-1 whitespace-pre-wrap bg-gray-50 p-3 rounded-md border">
+                {selectedMessage?.message}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="mt-6">
+            <Button
+              variant="destructive"
+              onClick={() => selectedMessage && handleDeleteMessage(selectedMessage.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Eliminar
+            </Button>
+            <DialogClose asChild>
+              <Button variant="outline">
+                Cerrar
+              </Button>
+            </DialogClose>
+            <Button asChild>
+              <a href={`mailto:${selectedMessage?.email}`}>
+                Responder
+              </a>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
