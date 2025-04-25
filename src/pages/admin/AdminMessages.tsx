@@ -4,6 +4,7 @@ import { MessageSquare, Search, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -18,58 +19,57 @@ import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const AdminMessages = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { messages, isLoading, markAsRead, deleteMessage } = useContactMessages();
+  const { messages, isLoading, deleteMessage } = useContactMessages();
   const { toast } = useToast();
-  const [selectedMessage, setSelectedMessage] = useState<any>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const navigate = useNavigate();
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleViewMessage = async (message: any) => {
-    setSelectedMessage(message);
-    setDialogOpen(true);
-    
-    // Mark as read if not already read
-    if (!message.read) {
-      try {
-        await markAsRead.mutateAsync(message.id);
-      } catch (error) {
-        console.error("Error marking message as read:", error);
-      }
-    }
+  const handleViewMessage = (messageId: string) => {
+    navigate(`/admin/messages/${messageId}`);
   };
 
-  const handleDeleteMessage = async (id: string) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este mensaje?")) {
-      try {
-        await deleteMessage.mutateAsync(id);
+  const handleDeleteClick = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMessageToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
 
-        // If the deleted message is currently being viewed, close the dialog
-        if (selectedMessage && selectedMessage.id === id) {
-          setSelectedMessage(null);
-          setDialogOpen(false);
-        }
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Error al eliminar",
-          description: error.message || "Hubo un error al eliminar el mensaje",
-        });
-      }
+  const handleDeleteMessage = async () => {
+    if (!messageToDelete) return;
+    
+    try {
+      await deleteMessage.mutateAsync(messageToDelete);
+      toast({
+        title: "Mensaje eliminado",
+        description: "El mensaje ha sido eliminado correctamente.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error al eliminar",
+        description: error.message || "Hubo un error al eliminar el mensaje",
+      });
+    } finally {
+      setMessageToDelete(null);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -87,9 +87,6 @@ const AdminMessages = () => {
       return dateString;
     }
   };
-
-  console.log("Messages in AdminMessages component:", messages);
-  console.log("isLoading:", isLoading);
 
   return (
     <div className="space-y-6">
@@ -125,7 +122,11 @@ const AdminMessages = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredMessages.map((message) => (
-                    <TableRow key={message.id}>
+                    <TableRow 
+                      key={message.id} 
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleViewMessage(message.id)}
+                    >
                       <TableCell>
                         {!message.read ? (
                           <Badge variant="default" className="bg-directorio-500">Nuevo</Badge>
@@ -146,7 +147,10 @@ const AdminMessages = () => {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => handleViewMessage(message)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewMessage(message.id);
+                            }}
                           >
                             <Eye className="h-4 w-4" />
                             <span className="sr-only">Ver</span>
@@ -155,7 +159,7 @@ const AdminMessages = () => {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
-                            onClick={() => handleDeleteMessage(message.id)}
+                            onClick={(e) => handleDeleteClick(message.id, e)}
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Eliminar</span>
@@ -175,53 +179,22 @@ const AdminMessages = () => {
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              {selectedMessage && `Mensaje de ${selectedMessage.name}`}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedMessage && `Recibido el ${formatDate(selectedMessage.created_at)}`}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 mt-4">
-            <div>
-              <div className="text-sm font-medium text-gray-500">Email:</div>
-              <div>{selectedMessage?.email}</div>
-            </div>
-            
-            <div>
-              <div className="text-sm font-medium text-gray-500">Mensaje:</div>
-              <div className="mt-1 whitespace-pre-wrap bg-gray-50 p-3 rounded-md border">
-                {selectedMessage?.message}
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter className="mt-6">
-            <Button
-              variant="destructive"
-              onClick={() => selectedMessage && handleDeleteMessage(selectedMessage.id)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El mensaje será eliminado permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteMessage}>
               Eliminar
-            </Button>
-            <DialogClose asChild>
-              <Button variant="outline">
-                Cerrar
-              </Button>
-            </DialogClose>
-            <Button asChild>
-              <a href={`mailto:${selectedMessage?.email}`}>
-                Responder
-              </a>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

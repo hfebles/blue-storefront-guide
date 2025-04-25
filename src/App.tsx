@@ -16,6 +16,7 @@ import AdminStores from "./pages/admin/AdminStores";
 import AdminStoreForm from "./pages/admin/AdminStoreForm";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminMessages from "./pages/admin/AdminMessages";
+import AdminMessageDetail from "./pages/admin/AdminMessageDetail";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="stores/:id" element={<AdminStoreForm />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="messages" element={<AdminMessages />} />
+            <Route path="messages/:id" element={<AdminMessageDetail />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>

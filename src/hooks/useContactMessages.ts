@@ -32,6 +32,27 @@ export const useContactMessages = () => {
     },
   });
 
+  const getMessage = async (id: string): Promise<ContactMessage | null> => {
+    console.log("Fetching single contact message:", id);
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching contact message:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Error al cargar el mensaje',
+        description: error.message || "Ocurrió un error al cargar el mensaje",
+      });
+      throw error;
+    }
+    
+    return data as ContactMessage;
+  };
+
   const createMessage = useMutation({
     mutationFn: async (newMessage: Omit<ContactMessage, 'id' | 'created_at' | 'read'>) => {
       console.log("Creating new contact message:", newMessage);
@@ -134,6 +155,7 @@ export const useContactMessages = () => {
   return {
     messages: messages || [],
     isLoading,
+    getMessage,
     createMessage,
     markAsRead,
     deleteMessage,
