@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,12 +38,12 @@ export const StoreImageUploader = ({ storeId }: StoreImageUploaderProps) => {
     }
   };
 
-  // Cargar las imágenes existentes cuando se monta el componente o cambia el storeId
-  useState(() => {
+  // Changed from useState to useEffect - this was the main issue
+  useEffect(() => {
     if (storeId) {
       fetchStoreImages();
     }
-  });
+  }, [storeId]);
 
   const addImage = async (e: React.FormEvent) => {
     e.preventDefault();
