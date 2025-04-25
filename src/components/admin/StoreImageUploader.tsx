@@ -32,13 +32,17 @@ export const StoreImageUploader = ({ storeId }: StoreImageUploaderProps) => {
         setImages(data);
       } else {
         console.error('Error fetching images:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar las imágenes",
+          variant: "destructive",
+        });
       }
     } catch (err) {
       console.error('Error in fetch store images:', err);
     }
   };
 
-  // Changed from useState to useEffect - this was the main issue
   useEffect(() => {
     if (storeId) {
       fetchStoreImages();
@@ -61,6 +65,15 @@ export const StoreImageUploader = ({ storeId }: StoreImageUploaderProps) => {
       toast({
         title: "Error",
         description: "Por favor ingrese una URL de imagen válida",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (images.length >= 5) {
+      toast({
+        title: "Error",
+        description: "Ha alcanzado el límite de 5 imágenes",
         variant: "destructive",
       });
       return;
@@ -89,8 +102,9 @@ export const StoreImageUploader = ({ storeId }: StoreImageUploaderProps) => {
       });
       
       setImageUrl("");
-      fetchStoreImages(); // Volver a cargar las imágenes
+      await fetchStoreImages();
     } catch (error: any) {
+      console.error('Error adding image:', error);
       toast({
         title: "Error",
         description: error.message || "Error al agregar la imagen",
@@ -119,8 +133,9 @@ export const StoreImageUploader = ({ storeId }: StoreImageUploaderProps) => {
         description: "La imagen fue eliminada de la galería",
       });
       
-      fetchStoreImages(); // Volver a cargar las imágenes
+      await fetchStoreImages();
     } catch (error: any) {
+      console.error('Error deleting image:', error);
       toast({
         title: "Error",
         description: error.message || "Error al eliminar la imagen",
